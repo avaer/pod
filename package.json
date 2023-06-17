@@ -2,7 +2,7 @@
   "name": "pod",
   "version": "0.0.1",
   "description": "",
-  "main": "pod-server.js",
+  "main": "fs-server.js",
   "type": "module",
   "scripts": {
     "start": "node pod-server.js",
