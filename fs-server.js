@@ -24,20 +24,52 @@ const startFsServer = () => {
     const urlPath = path.join(dataPath, p);
 
     if (req.method === 'GET') {
-      // check if directory/file, etc.
-      const stats = await new Promise((accept, reject) => {
-        fs.stat(urlPath, (err, stats) => {
-          if (!err) {
-            accept(stats);
-          } else if (err.code === 'ENOENT') {
-            accept(null);
-          } else {
-            reject(err);
-          }
+      const accept = req.getHeader('accept');
+      if (accept === 'applocation/json') { // directory
+        const files = await new Promise((accept, reject) => {
+          fs.readdir(urlPath, (err, files) => {
+            if (!err) {
+              accept(files);
+            } else {
+              reject(err);
+            }
+          });
         });
-      });
-      if (stats) {
-        if (stats.isDirectory()) {
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify(files));
+      } else if (accept === 'application/fileSize') { // file size
+        const stats = await new Promise((accept, reject) => {
+          fs.stat(urlPath, (err, stats) => {
+            if (!err) {
+              accept(stats);
+            } else if (err.code === 'ENOENT') {
+              accept(null);
+            } else {
+              reject(err);
+            }
+          });
+        });
+        if (stats && stats.isFile()) {
+          res.setHeader('Content-Type', 'application/fileSize');
+          res.end(stats.size);
+        } else {
+          res.statusCode = 404;
+          res.end();
+        }
+      } else if (accept === 'application/directorySize') { // directory size
+        const stats = await new Promise((accept, reject) => {
+          fs.stat(urlPath, (err, stats) => {
+            if (!err) {
+              accept(stats);
+            } else if (err.code === 'ENOENT') {
+              accept(null);
+            } else {
+              reject(err);
+            }
+          });
+        });
+        if (stats && stats.isDirectory()) {
+          // read the file count
           const files = await new Promise((accept, reject) => {
             fs.readdir(urlPath, (err, files) => {
               if (!err) {
@@ -47,23 +79,20 @@ const startFsServer = () => {
               }
             });
           });
-          res.setHeader('Content-Type', 'application/json');
-          res.end(JSON.stringify(files));
-        } else if (stats.isFile()) {
-          const rs = fs.createReadStream(urlPath);
-          rs.on('error', err => {
-            console.warn(err);
-            res.statusCode = 500;
-            res.end(err.stack);
-          });
-          rs.pipe(res);
+          res.setHeader('Content-Type', 'application/directorySize');
+          res.end(files.length);
         } else {
-          res.statusCode = 400;
-          res.end('not implemented');
+          res.statusCode = 404;
+          res.end();
         }
-      } else {
-        res.statusCode = 404;
-        res.end('not found');
+      } else { // file
+        const rs = fs.createReadStream(urlPath);
+        rs.on('error', err => {
+          console.warn(err);
+          res.statusCode = 500;
+          res.end(err.stack);
+        });
+        rs.pipe(res);
       }
     } else if (['PUT', 'POST'].includes(req.method)) {
       const dirpath = path.dirname(urlPath);
