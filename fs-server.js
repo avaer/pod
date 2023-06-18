@@ -23,8 +23,6 @@ const startFsServer = () => {
     const p = o.pathname.replace(/^\.{1,2}(?:\/|$)/g, '');
     const fullPath = path.join(dataPath, p);
 
-    console.log('got request', [req.method, p]);
-
     if (req.method === 'GET') {
       const accept = req.headers['accept'];
       if (accept === 'application/json') { // directory
