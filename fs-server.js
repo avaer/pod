@@ -60,8 +60,10 @@ const startFsServer = () => {
           res.setHeader('Content-Type', 'application/fileSize');
           res.json(stats.size);
         } else {
-          res.statusCode = 404;
-          res.end();
+          // res.statusCode = 404;
+          // res.end();
+          res.setHeader('Content-Type', 'application/fileSize');
+          res.json(0);
         }
       } else if (accept === 'application/directorySize') { // directory size
         const stats = await new Promise((accept, reject) => {
@@ -89,8 +91,10 @@ const startFsServer = () => {
           res.setHeader('Content-Type', 'application/directorySize');
           res.json(files.length);
         } else {
-          res.statusCode = 404;
-          res.end();
+          res.setHeader('Content-Type', 'application/directorySize');
+          res.json(0);
+          // res.statusCode = 404;
+          // res.end();
         }
       } else { // file
         const rs = fs.createReadStream(urlPath);
