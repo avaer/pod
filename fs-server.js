@@ -41,8 +41,10 @@ const startFsServer = () => {
           res.setHeader('Content-Type', 'application/json');
           res.end(JSON.stringify(files));
         } else {
-          res.statusCode = 404;
-          res.end();
+          // res.statusCode = 404;
+          // res.end();
+          res.setHeader('Content-Type', 'application/json');
+          res.json([]);
         }
       } else if (accept === 'application/fileSize') { // file size
         const stats = await new Promise((accept, reject) => {
