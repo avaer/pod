@@ -51,7 +51,7 @@ const startFsServer = () => {
         });
         if (stats && stats.isFile()) {
           res.setHeader('Content-Type', 'application/fileSize');
-          res.end(stats.size);
+          res.json(stats.size);
         } else {
           res.statusCode = 404;
           res.end();
@@ -80,7 +80,7 @@ const startFsServer = () => {
             });
           });
           res.setHeader('Content-Type', 'application/directorySize');
-          res.end(files.length);
+          res.json(files.length);
         } else {
           res.statusCode = 404;
           res.end();
