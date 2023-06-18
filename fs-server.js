@@ -91,7 +91,7 @@ const startFsServer = () => {
   const server = http.createServer();
   server.on('request', app);
 
-  const port = parseInt(process.env.PORT, 10) || 8899;
+  const port = parseInt(process.env.PORT, 10) || 3333;
   const host = '0.0.0.0';
   server.listen(port, host);
   server.on('listening', () => {
