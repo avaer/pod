@@ -24,7 +24,7 @@ const startFsServer = () => {
     const urlPath = path.join(dataPath, p);
 
     if (req.method === 'GET') {
-      const accept = req.getHeader('accept');
+      const accept = req.headers['accept'];
       if (accept === 'applocation/json') { // directory
         const files = await new Promise((accept, reject) => {
           fs.readdir(urlPath, (err, files) => {
@@ -109,7 +109,7 @@ const startFsServer = () => {
       });
       req.pipe(ws);
     } else if (['DELETE'].includes(req.method)) {
-      if (req.getHeader('x-force')) {
+      if (req.headers['x-force']) {
         await rimraf(p);
         res.end();
       } else {
