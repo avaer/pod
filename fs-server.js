@@ -30,13 +30,20 @@ const startFsServer = () => {
           fs.readdir(urlPath, (err, files) => {
             if (!err) {
               accept(files);
+            } else if (err.code === 'ENOENT') {
+              accept(null);
             } else {
               reject(err);
             }
           });
         });
-        res.setHeader('Content-Type', 'application/json');
-        res.end(JSON.stringify(files));
+        if (files) {
+          res.setHeader('Content-Type', 'application/json');
+          res.end(JSON.stringify(files));
+        } else {
+          res.statusCode = 404;
+          res.end();
+        }
       } else if (accept === 'application/fileSize') { // file size
         const stats = await new Promise((accept, reject) => {
           fs.stat(urlPath, (err, stats) => {
