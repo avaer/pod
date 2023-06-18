@@ -7,6 +7,7 @@ import http from 'http';
 
 import express from 'express';
 import {mkdirp} from 'mkdirp';
+import {rimraf} from 'rimraf';
 
 //
 
@@ -78,6 +79,14 @@ const startFsServer = () => {
         res.end();
       });
       req.pipe(ws);
+    } else if (['DELETE'].includes(req.method)) {
+      if (req.getHeader('x-force')) {
+        await rimraf(p);
+        res.end();
+      } else {
+        res.status(403);
+        res.end();
+      }
     } else {
       res.statusCode = 400;
       res.end('not implemented');
