@@ -25,7 +25,7 @@ const startFsServer = () => {
 
     if (req.method === 'GET') {
       const accept = req.headers['accept'];
-      if (accept === 'applocation/json') { // directory
+      if (accept === 'application/json') { // directory
         const files = await new Promise((accept, reject) => {
           fs.readdir(urlPath, (err, files) => {
             if (!err) {
