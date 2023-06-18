@@ -21,13 +21,15 @@ const startFsServer = () => {
   app.all('*', async (req, res, next) => {
     const o = url.parse(req.url);
     const p = o.pathname.replace(/^\.{1,2}(?:\/|$)/g, '');
-    const urlPath = path.join(dataPath, p);
+    const fullPath = path.join(dataPath, p);
+
+    console.log('got request', [req.method, p]);
 
     if (req.method === 'GET') {
       const accept = req.headers['accept'];
       if (accept === 'application/json') { // directory
         const files = await new Promise((accept, reject) => {
-          fs.readdir(urlPath, (err, files) => {
+          fs.readdir(fullPath, (err, files) => {
             if (!err) {
               accept(files);
             } else if (err.code === 'ENOENT') {
@@ -48,7 +50,7 @@ const startFsServer = () => {
         }
       } else if (accept === 'application/fileSize') { // file size
         const stats = await new Promise((accept, reject) => {
-          fs.stat(urlPath, (err, stats) => {
+          fs.stat(fullPath, (err, stats) => {
             if (!err) {
               accept(stats);
             } else if (err.code === 'ENOENT') {
@@ -69,7 +71,7 @@ const startFsServer = () => {
         }
       } else if (accept === 'application/directorySize') { // directory size
         const stats = await new Promise((accept, reject) => {
-          fs.stat(urlPath, (err, stats) => {
+          fs.stat(fullPath, (err, stats) => {
             if (!err) {
               accept(stats);
             } else if (err.code === 'ENOENT') {
@@ -82,7 +84,7 @@ const startFsServer = () => {
         if (stats && stats.isDirectory()) {
           // read the file count
           const files = await new Promise((accept, reject) => {
-            fs.readdir(urlPath, (err, files) => {
+            fs.readdir(fullPath, (err, files) => {
               if (!err) {
                 accept(files);
               } else {
@@ -99,7 +101,7 @@ const startFsServer = () => {
           // res.end();
         }
       } else { // file
-        const rs = fs.createReadStream(urlPath);
+        const rs = fs.createReadStream(fullPath);
         rs.on('error', err => {
           if (err.code === 'ENOENT') {
             res.statusCode = 204;
@@ -113,10 +115,10 @@ const startFsServer = () => {
         rs.pipe(res);
       }
     } else if (['PUT', 'POST'].includes(req.method)) {
-      const dirpath = path.dirname(urlPath);
+      const dirpath = path.dirname(fullPath);
       await mkdirp(dirpath);
 
-      const ws = fs.createWriteStream(urlPath);
+      const ws = fs.createWriteStream(fullPath);
       ws.on('error', err => {
         console.warn(err);
         res.statusCode = 500;
@@ -128,7 +130,7 @@ const startFsServer = () => {
       req.pipe(ws);
     } else if (['DELETE'].includes(req.method)) {
       if (req.headers['x-force']) {
-        await rimraf(p);
+        await rimraf(fullPath);
         res.end();
       } else {
         res.status(403);
