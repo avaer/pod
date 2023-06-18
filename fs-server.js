@@ -101,9 +101,14 @@ const startFsServer = () => {
       } else { // file
         const rs = fs.createReadStream(urlPath);
         rs.on('error', err => {
-          console.warn(err);
-          res.statusCode = 500;
-          res.end(err.stack);
+          if (err.code === 'ENOENT') {
+            res.statusCode = 204;
+            res.end();
+          } else {
+            console.warn(err);
+            res.statusCode = 500;
+            res.end(err.stack);
+          }
         });
         rs.pipe(res);
       }
